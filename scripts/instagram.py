@@ -59,11 +59,13 @@ def diagnose():
     print(f"Saved IG_USER_ID is {len(USER_ID)} characters long")
     for host in HOSTS:
         print(f"--- {host}")
-        show("me", host, "me", {"fields": "id,name,username,user_id"})
+        show("me", host, "me", {"fields": "id,name"})
         show("permissions", host, "me/permissions", {})
         show("pages with Instagram", host, "me/accounts",
              {"fields": "name,instagram_business_account{id,username}"})
         show("businesses", host, "me/businesses", {"fields": "id,name"})
+        show("instagram accounts on token", host, "me", {"fields": "instagram_business_account{id,username}"})
+        show("assigned pages", host, "me/assigned_pages", {"fields": "name,instagram_business_account{id,username}"})
         show("token info", host, "debug_token", {"input_token": TOKEN})
 
 
