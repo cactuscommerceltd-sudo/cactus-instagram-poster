@@ -49,6 +49,24 @@ def pick_host():
     sys.exit("Could not reach the Instagram account with this token.\n" + "\n".join(errors))
 
 
+def diagnose():
+    """Print what the token can see, to find the right Instagram account ID. Posts nothing."""
+    def show(label, host, path, params):
+        try:
+            print(f"{label}: {json.dumps(call(host, 'GET', path, params))}")
+        except RuntimeError as e:
+            print(f"{label}: not available ({str(e)[:160]})")
+    print(f"Saved IG_USER_ID is {len(USER_ID)} characters long")
+    for host in HOSTS:
+        print(f"--- {host}")
+        show("me", host, "me", {"fields": "id,name,username,user_id"})
+        show("permissions", host, "me/permissions", {})
+        show("pages with Instagram", host, "me/accounts",
+             {"fields": "name,instagram_business_account{id,username}"})
+        show("businesses", host, "me/businesses", {"fields": "id,name"})
+        show("token info", host, "debug_token", {"input_token": TOKEN})
+
+
 def wait_ready(host, container_id, label):
     for _ in range(30):
         st = call(host, "GET", container_id, {"fields": "status_code"}).get("status_code")
@@ -105,6 +123,7 @@ if __name__ == "__main__":
     if not TOKEN or not USER_ID:
         sys.exit("IG_ACCESS_TOKEN and IG_USER_ID secrets must both be set")
     if len(sys.argv) >= 2 and sys.argv[1] == "check":
+        diagnose()
         host, username = pick_host()
         print(f"Connection OK: token can reach @{username} via {host}")
     elif len(sys.argv) == 3 and sys.argv[1] == "publish":
