@@ -1,0 +1,67 @@
+name: Post to Instagram
+
+# Runs when the daily agent adds a new post folder. Waits for your approval
+# (the "instagram" environment has you as a required reviewer) before posting.
+on:
+  push:
+    branches: [main]
+    paths: ["posts/**/caption.txt"]
+  workflow_dispatch:
+    inputs:
+      folder:
+        description: "Post folder to publish, e.g. posts/2026-11-02"
+        required: true
+
+concurrency:
+  group: instagram-post
+  cancel-in-progress: false
+
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    outputs:
+      folder: ${{ steps.f.outputs.folder }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - id: f
+        name: Find the new post
+        run: |
+          if [ -n "${{ github.event.inputs.folder }}" ]; then
+            folder="${{ github.event.inputs.folder }}"
+          else
+            folder=$(git diff --name-only HEAD~1 HEAD -- 'posts/*/caption.txt' | tail -1 | xargs -r dirname)
+          fi
+          if [ -z "$folder" ] || [ ! -f "$folder/caption.txt" ]; then
+            echo "No post folder found"; exit 1
+          fi
+          echo "folder=$folder" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Ready to post: \`$folder\`"
+            echo
+            for f in "$folder"/slide-*.jpg; do
+              echo "![]($(basename "$f"))" | sed "s#(#(https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/$folder/#"
+            done
+            echo
+            echo '**Caption**'
+            echo '```'
+            cat "$folder/caption.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    needs: find
+    runs-on: ubuntu-latest
+    environment: instagram
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Publish carousel
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IMAGE_BASE_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/${{ needs.find.outputs.folder }}
+        run: python scripts/instagram.py publish "${{ needs.find.outputs.folder }}"
