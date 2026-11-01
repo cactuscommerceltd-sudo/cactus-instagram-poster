@@ -1,0 +1,11 @@
+New Amazon rule: if you ship your own orders, business buyers could stop seeing your listings.
+
+Since 30 September, Amazon has tracked how many of your Amazon Business deliveries arrive during the customer's working hours. That's Amazon's store for companies, not your everyday shoppers.
+
+The target is 90%. From 30 October, listings that fall below it can be hidden from business customers.
+
+This only affects FBM sellers (Fulfilled by Merchant, where you ship orders yourself). Check your Business Hour Delivery Rate in Seller Central, and look at whether your carriers deliver Monday to Friday in working hours.
+
+If you'd like a second pair of eyes on your delivery numbers, my free account review is a good place to start, no pressure.
+
+#AmazonSeller #AmazonUK #AmazonBusiness #FBM #SMEGrowth #EcommerceUK #CactusCommerce
